@@ -7,8 +7,8 @@ body {
 hr{
     width:40%;
 }
-.navbar ,navbar-inverse{
-  z-index: 1;
+.navbar, .navbar-inverse, .dropdown-menu{
+  z-index: 2;
 }
 #landing-header {
   z-index: 1;
@@ -34,6 +34,9 @@ AN ELEMENT WITH GREATER STACK ORDER IS ALWAYS IN FRONT OF AN ELEMENT WITH A LOWE
   list-style: none;   /*to remove bullet points */
   margin: 0;
   padding: 0;
+}
+.dropdown-menu .divider{
+    background-color:linen;
 }
 /*STYLING LIST ITEMS WHICH ARE THE BACKGROUND IMAGES*/
 .slideshow li { 
