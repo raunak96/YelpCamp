@@ -1,0 +1,121 @@
+body {
+  background-color: #000;
+}
+#landing-header h1{
+    font-size:4.5em;
+}
+hr{
+    width:40%;
+}
+.navbar ,navbar-inverse{
+  z-index: 1;
+}
+#landing-header {
+  z-index: 1;
+  position: relative;  /* to move this id relative to its current position */
+  text-align: center;
+  padding-top: 25vh;     
+  color:#fff;
+  font-weight: bold;
+  font-size:15px;
+
+/* THE Z-INDEX PROPERTY SPECIFIES THE STACK ORDER OF AN ELEMENT.
+AN ELEMENT WITH GREATER STACK ORDER IS ALWAYS IN FRONT OF AN ELEMENT WITH A LOWER STACK ORDER. */
+}
+
+/*CLASS of ul */
+.slideshow { 
+  position: fixed;         /*This will fix the ul to the window at specified points as defined below(top-left)*/
+  width: 100%;              /*filling the entire screen by setting */
+  height: 100%;
+  top: 50px;               /*positioning it in the top left corner */ 
+  left: 0;       
+  z-index: 0;        /*we set the z-index to 0 to keep the background images behind rest of page's content  */          
+  list-style: none;   /*to remove bullet points */
+  margin: 0;
+  padding: 0;
+}
+/*STYLING LIST ITEMS WHICH ARE THE BACKGROUND IMAGES*/
+.slideshow li { 
+  width: 100%;        /* IMAGE TAKES ENTIRE WINDOW */
+  height: 100%;
+  position: absolute; /* POSITIONING DONE RELATIVE TO PARENT */
+  top: 0;
+  left: 0;
+  background-size: cover;    /*STRETCHES IMAGE BY SMALLEST LIMIT AND MAINTAINS ASPECT RATIO TO COVER ENTIRE CONTAINER */ 
+  background-position:50% 60%;
+  background-repeat: no-repeat;
+  opacity: 0;
+  z-index: 0;  /* ENSURES IMAGE BEHIND LANDING-HEADER(Z-AXIS) */
+  animation: imageAnimation 50s linear infinite; 
+
+/* THE ANIMATION PROPERTY AT THE BOTTOM OF THIS RULE, THIS IS HOW WE ADD AN ANIMATION TO AN ELEMENT
+IN THIS CASE WE HAVE AN ANIMATION NAMED imageAnimation THAT LASTS FOR 50S,
+KEEPS LINEAR TIMING	(THE WHOLE ANIMATION RUNS AT THE SAME SPEED), AND LOOPS AN INFINITE NUMBER OF TIMES */
+}
+
+/*EACH LIST ITEM NEEDS A BACKGROUND-IMAGE AND THE LAST FOUR NEED AN ANIMATION-DELAY:10sec
+(THIS WAY THEY ALL FIRE OFF ONE AFTER THE OTHER IN TEN SECOND INTERVALS):*/
+
+.slideshow li:nth-child(1) { 
+  background-image: url(http://i.imgur.com/K3mPv14.jpg) 
+}
+.slideshow li:nth-child(2) { 
+  background-image: url(http://i.imgur.com/SBEmFpv.jpg);
+  animation-delay: 10s; 
+}
+.slideshow li:nth-child(3) { 
+  background-image: url(http://i.imgur.com/emvhOnb.jpg);
+  animation-delay: 20s; 
+}
+.slideshow li:nth-child(4) { 
+  background-image: url(http://i.imgur.com/2LSMCmJ.jpg);
+  animation-delay: 30s; 
+}
+.slideshow li:nth-child(5) { 
+  background-image: url(http://i.imgur.com/TVGe0Ef.jpg);
+  animation-delay: 40s; 
+}
+
+
+@keyframes imageAnimation { 
+  0% { 
+    opacity: 0; 
+    animation-timing-function: ease-in;
+    transform: scale(1.2);     /*resizes background image in 2d space value 1 has no effect*/
+  }
+  10% {
+    opacity: 1;
+    animation-timing-function: ease-out;
+    transform: scale(1.1);    /*resizes a bit in 2d plane making image zoomed effect */
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.2);
+    
+  }
+  30% {
+    opacity: 0;
+    transform: scale(1.0);
+  }
+}
+
+/*THE ANIMATION WILL BE NAMED IMAGEANIMATION,SAME AS .SLIDESHOW (UNORDERED LIST) RULE
+1.FROM 0% TO 10% (THE BEGINNING OF OUR ANIMATION) THE LIST ITEM BEGINS CHANGING IT'S OPACITY FROM 0 TO 1 (INVISIBLE TO VISIBLE)
+2.THE ANIMATION-TIMING-FUNCTION IS SET TO EASE-IN AT 0% AND EASE-OUT AT 10%(50s*10%=5 Sec), THIS MAKES FOR A MORE SMOOTH FADE-IN 
+3.THE LIST ITEM'S OPACITY THEN STAYS AT 1 UNTIL IT REACHES 20% AT WHICH POINT IT FADES BACK OUT, REACHING 0 AT 30% AND STAYING AT 0 
+4.IF WE HAVE 5 BACKGROUND IMAGES VISIBLE FOR 5 SECONDS EACH, THEN THE TIME IT TAKES TO FADE THE IMAGE IN 
+  AND KEEP IT VISIBLE IS 10 SECONDS WITH A 5 SECOND CROSSFADE/FADEOUT INTO THE NEXT IMAGE; 
+  THE ENTIRE ANIMATION CYCLE FOR ALL 5 IMAGES TAKES 50 SECONDS TOTAL
+
+5.100% DIVIDED BY 5(NO OF IMAGES) IS 20% SO EACH IMAGE'S FADEIN AND VISIBILITY SHOULD LAST 20% OF THE CYCLE;
+HALF OF 20% IS 10%, THAT IS WHY OUR FADE IN IS FROM 0% TO 10%, THEN WE KEEP IT VISIBLE UNTIL 20% IS REACHED AND 
+BEGIN THE FADEOUT FROM 20% TO 30%, THE 5 SECOND FADEOUT OVERLAPS THE NEXT IMAGE'S 5 SECOND FADEIN, 
+WHICH IS WHAT CREATES THE CROSSFADE EFFECT  */
+
+/* Older browser support - .no-cssanimations class added by modernizr
+  if animation not supported by browser sets opacity for single background to 1 */
+  
+.no-cssanimations .slideshow li {
+	opacity: 1;
+}

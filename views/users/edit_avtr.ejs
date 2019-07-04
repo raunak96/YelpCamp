@@ -1,0 +1,28 @@
+<% include ../partials/header.ejs %>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-6">
+            <h1 style="text-align:center;">Edit Your Avatar</h1>
+            <div class="thumbnail">
+                <img id="avtr" src="<%=user.avatar %>" alt="No Img">
+                <form action="/users/<%=user._id%>/avtr?_method=put" method="post">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="avatar" value="<%=user.avatar%>">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-lg btn-primary btn-block">Submit!</button> <!-- btn-block :button takes entire size of block -->
+                    </div>
+            </form>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $("input").on("change",function(){
+       $("img").attr("src",$("input").val()); 
+    });
+</script>
+<% include ../partials/footer.ejs %>

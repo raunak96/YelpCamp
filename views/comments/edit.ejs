@@ -1,0 +1,21 @@
+<% include ../partials/header.ejs %>
+
+<div class="container">
+    <div class="row">
+        <h1 style="text-align:center">Edit Comment</h1>
+        <div style="width:30% ;margin:25px auto;"> 
+            <form action="/campgrounds/<%= campground_id %>/comments/<%= comment._id %>?_method=put" method="post">          
+                <div class="form-group"> 
+                <!--SETTING NAME AS COMMENT[TEXT] AND COMMENT[AUTHOR],BOTH CAN BE IDENTIFIED BY COMMENT OBJECT-->
+                    <input class="form-control" type="text" name="comment[text]" value="<%= comment.text %>"> 
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-lg btn-primary btn-block">Submit!</button> <!-- btn-block :button takes entire size of block -->
+                </div>
+            </form>
+            <a href="/campgrounds">Go Back!</a>
+        </div>
+    </div>
+</div>
+
+<% include ../partials/footer.ejs %>

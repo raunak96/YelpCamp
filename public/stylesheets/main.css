@@ -1,0 +1,31 @@
+.thumbnail img{
+    width:100%;
+    height:auto;
+}
+.thumbnail{
+    padding:0;
+}
+.thumbnail .caption-full{
+    padding:9px;
+}
+#deleteForm{
+    display: inline;
+}
+#mapid { 
+    height: 400px; 
+    width: 100%;
+}
+#abs{
+    position:relative;
+}
+.dropdown-menu .divider{
+    background-color:linen;
+}
+.glyphicon-edit{
+    position:absolute;
+    top:3px;
+    left:3px;
+    color:white;
+    font-weight:bold;
+    font-size:2em;
+}

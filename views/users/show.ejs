@@ -1,0 +1,40 @@
+<% include ../partials/header1.ejs %>
+
+   <div class="container">
+    <div class="row">
+    	<div class="col-md-6">
+    			<h1 style="text-align:center;"><%= user.firstName + " " + user.lastName %></h1>
+    		<div class="thumbnail" id="abs">
+    			<img  class="img-thumbnail img-responsive"style="max-height:450px" src="<%= user.avatar %>" onerror="src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPlkwhBse_JCK37_0WA3m_PHUpFncOVLM0s0c4cCqpV27UteuJ'" alt="user profile image">
+    			<% if(currentUser && (user._id.equals(currentUser._id)))
+    			{ %>
+    			   <a href="/users/<%=user._id %>/avtr/edit" class="btn btn-lg"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+    			   <a class="text-info pull-right" href="/users/<%=user._id %>/edit"style="font-weight:bold;"><p>Edit Your Profile!</p></a>
+    		<%	} 
+    		     else{ %>
+    			<!--mailto WORKS IF WE DIRECTLY WANT TO MAIL-->
+    			<p><div class="caption">You can contact me at:  <a href="mailto:<%= user.email %>"><%= user.email %></a>
+    			    <a href="/follow/<%= user._id %>"><button class="btn btn-success pull-right">Follow <%= user.username %></button></a></div>
+    			</p>
+    		  <%  } %>
+    		  </div>
+    		<div class="well">
+        	    <%=user.about %>
+        	</div>
+    	</div>
+    	<div class="col-md-1"></div>
+    	<div class="col-md-5">
+    		<h3><%= user.username %>'s Uploads:</h3>
+    		<div class="row">
+        		
+        		<% campgrounds.forEach(function(campground) { %>
+        			<div class="col-md-4">
+        			    <div class="thumbnail"><a href="/campgrounds/<%= campground.id %>"><img class="img-thumbnail" src="<%= campground.image %>"><%= campground.name %></a></div>
+        		    </div>
+        		<% }); %>
+        	
+        	</div>
+	    </div>
+    </div>
+</div>
+<% include ../partials/footer.ejs %>

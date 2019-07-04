@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <!-- Make site responsive on mobile/tablet -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>YelpCamp</title>
+        <script src='https://api.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js'></script>
+        <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css' rel='stylesheet' />
+        <!--STYLESHEETS -->
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> 
+        <link rel="stylesheet" href="/stylesheets/main.css"> 
+    </head>
+    <body>
+        
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                      </button>
+                    <a class="navbar-brand" href="/">YelpCamp</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li class="<%= typeof page !== 'undefined' && page === 'campgrounds' ? 'active' : '' %>"><a href="/campgrounds">Home</a></li>
+                </ul>
+                <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                    <ul class="nav navbar-nav navbar-right">
+                        
+                    <% if(!currentUser){ %>
+                    <li class="<%= typeof page !== 'undefined' && page === 'login' ? 'active' : '' %>"><a href="/login">Login</a></li>
+                    <li class="<%= typeof page !== 'undefined' && page === 'register' ? 'active' : '' %>"><a href="/register">Sign Up</a></li>
+                    <% } else 
+                        { %>
+                            <li class="dropdown">
+                              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Notifications <span class="badge"><%= notifications.length %></span></a>
+                              <ul class="dropdown-menu">
+                                <li>
+                                    <a href="/notifications">View past notifications</a>
+                                </li>
+                                <% notifications.forEach(function(notification) { %>                          
+                                    <li>
+                                        <a href="/notifications/<%= notification.id %>">
+                                            <%= notification.username %> created a new campground
+                                        </a>
+                                    </li>
+                                <% }); %>
+                              </ul>
+                            </li>
+                            
+                            <li><a class="active" href="/users/<%=currentUser._id%>">Signed In As <%= currentUser.username %></a></li>
+                            <li class="dropdown">
+                                <!-- onerror GIVES ALT IMG IN CASE IMG NOT LOADED -->
+                              <a style="padding:0" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img class="img-circle img-responsive"style="height:50px;width:auto;" src="<%=currentUser.avatar %>"
+                              onerror="src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPlkwhBse_JCK37_0WA3m_PHUpFncOVLM0s0c4cCqpV27UteuJ'"></a>
+                              
+                              <ul class="dropdown-menu" style="background:#e0e0d1">
+                                <li><a href="/users/<%=currentUser._id%>">View Your Profile</a></li>
+                                <li role="separator" class="divider"></li> <!-- Like a hr -->
+                                <li><a href="/users/<%=currentUser._id%>/edit">Edit Your Profile</a></li>
+                                <li role="separator" class="divider"></li> <!-- Like a hr -->
+                                <li><a href="/users/<%=currentUser._id%>/avtr/edit">Edit Your Avatar</a></li>
+                                <li role="separator" class="divider"></li> <!-- Like a hr -->
+                                <li><a href="/logout">SignOut</a></li>
+                              </ul>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        
+        </nav>
+        <div class="container">
+            <% if(error && error.length>0) { %>
+            <div class="alert alert-danger" role="alert"><%= error %></div>
+            <% }  if(success && success.length>0) { %>
+            <div class="alert alert-success" role="alert"><%= success %></div>
+            <% } if(fail && fail.length>0) { %>
+            <div class="alert alert-warning" role="alert"><%= fail %></div>
+            <% } %>
+            
+        </div>
