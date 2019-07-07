@@ -3,7 +3,8 @@
 <div class="container">
     <div class="row">
         <h1 style="text-align:center">Create a New CampGround</h1>
-        <div style="width:30% ;margin:25px auto;"> 
+        <div class="col-md-3 col-xs-1"></div> 
+        <div class="col-md-6 col-xs-10"> 
             <form action="/campgrounds" method="post">          <!-- POST DATA TO /CAMPGROUNDS ROUTE -->
                 <div class="form-group"> 
                     <input class="form-control" type="text" name="name" placeholder="name">
@@ -20,7 +21,6 @@
                 <!--THIS IS A PLACES AUTOCOMPLETE API CDN FROM https://www.algolia.com-->
                 <div class ="form-group">
                     <input class="form-control" type="search" id="address-input" name="location" id="location" placeholder="Yosemite National Park, CA">
-                    <script src="https://cdn.jsdelivr.net/npm/places.js@1.15.1"></script>
                     <script>
                       var placesAutocomplete = places({
                         appId: '<%=process.env.APP_ID%>',

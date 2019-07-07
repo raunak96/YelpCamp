@@ -21,34 +21,37 @@ var options = {
 var geocoder = NodeGeocoder(options);
 
 //INDEX ROUTE----SHOWS ALL CAMPGROUNDS(IT IS A ROUTE WHICH SHOWS IN BRIEF ALL DATA)
-router.get("/",function(req,res){
+router.get("/",async function(req,res){
     if(req.query.search) //IF SEARCH INVOKED THIS ROUTE
     {
         //escaperegex function defined below
         const regex = new RegExp(escapeRegex(req.query.search), 'gi');//GI MAKES GLOBAL CASE-INSENSITIVE SEARCH POSSIBLE
        
         // GET ALL CAMPGROUNDS FROM DB WHOSE NAME,LOCATION OR AUTHOR NAME FUZZY MATCHES THE QUERY FROM SEARCH
-        Campground.find({name:regex},/*{$or: [{name: regex,}, {location: regex}, {"author.username":regex}]},*/ function(err, allCampgrounds){
-           if(err)
-           {
-               req.flash("error","Something Went Wrong");
-               res.redirect("/campgrounds");
-           } 
-           else if(!allCampgrounds.length) 
-           {
+        try{
+            let allCampgrounds= await Campground.find({name:regex}); /*{$or: [{name: regex,}, {location: regex}, {"author.username":regex}]},*/
+            if(!allCampgrounds.length) 
+            {
               return res.render("campgrounds/index.ejs",{campgrounds:allCampgrounds,fail:"No related Campground found!"});
             }
+            else 
               res.render("campgrounds/index.ejs",{campgrounds:allCampgrounds});
-        });
+        }
+        catch(err)
+        {
+            req.flash("error","Something Went Wrong");
+               res.redirect("/campgrounds");
+        }
     }
     else
     {
-        Campground.find({},function(err,Allcampgrounds){
-           if(err)
-                res.redirect("back");
-            else
+        try{
+                let Allcampgrounds=await Campground.find({});
                 res.render("campgrounds/index.ejs",{campgrounds:Allcampgrounds,page:"campgrounds"});
-        });
+           }
+           catch(err){
+                res.redirect("back");
+           }
     }
 });
 
@@ -78,26 +81,28 @@ router.post("/",middleware.isLoggedIn,async function(req,res){   //CONVENTION IS
     
     //CREATE A NEW CAMPGROUND AND SAVE TO DB
         let newlyCreated=await Campground.create(newCampground);
-        User.findById(req.user._id).populate('followers').exec(async function(err,foundUser){
+        await User.findById(req.user._id).populate('followers').exec(async function(err,foundUser){
                 if(err || !foundUser)
                 {
                     req.flash("error",err.message);
                      return res.redirect("/campgrounds");
                 }
-                var newNotification = {username: req.user.username,campgroundId: newlyCreated._id};
-                for(const follower of foundUser.followers) 
-                {
-                    try{
-                        let newlyNot=await Notification.create(newNotification);
-                        follower.notifications.push(newlyNot);
-                        follower.save();
+                try{
+                    
+                    var newNotification = {username: req.user.username,campgroundId: newlyCreated._id};
+                    for(const follower of foundUser.followers) 
+                    {
+                            let newlyNot=await Notification.create(newNotification);
+                            follower.notifications.push(newlyNot);
+                            follower.save();
+                        
                     }
-                    catch(err){
+                }
+                catch(err){
                             req.flash("error",err.message);
                             return res.redirect("/campgrounds");
                     }
-                }
-          });
+            });
             res.redirect("/campgrounds/"+newlyCreated._id);
     }
     catch(err)
@@ -121,15 +126,18 @@ router.get("/:id",function(req, res) {
     });
 });
 //EDIT ROUTE(FORM FOR EDIT)
-router.get("/:id/edit",middleware.checkCampgroundOwnership,function(req, res) {
-    Campground.findById(req.params.id,function(err,foundCampground){
-        if(!req.user._id.equals(foundCampground.author.id))
-        {
-            req.flash("error","You don't have the permission to do that");
-            return res.redirect("/campgrounds/"+req.params.id);
-        }
-        res.render("campgrounds/edit.ejs",{campground:foundCampground});
-    });
+router.get("/:id/edit",middleware.checkCampgroundOwnership,async function(req, res) {
+    try{
+        let foundCampground=await Campground.findById(req.params.id);
+            if(!req.user._id.equals(foundCampground.author.id))
+            {
+                req.flash("error","You don't have the permission to do that");
+                return res.redirect("/campgrounds/"+req.params.id);
+            }
+            res.render("campgrounds/edit.ejs",{campground:foundCampground});
+    }catch(err){
+        res.redirect('back');
+    }
 });
 //UPDATE ROUTE
 router.put("/:id",middleware.checkCampgroundOwnership,async function(req,res){
@@ -141,18 +149,17 @@ router.put("/:id",middleware.checkCampgroundOwnership,async function(req,res){
     req.body.campground.author=author;
     //GEOCODE STUFF(FIND LAT AND LNG FROM LOCATION(FORWARD GEOCODING))
     try{
-        let data=await geocoder.geocode(req.body.campground.location);
-             req.body.campground.lat = data[0].latitude;
-             req.body.campground.lng = data[0].longitude;
-             
-        let updatedCampground=await Campground.findByIdAndUpdate(req.params.id,req.body.campground,{new:true});
-                if(!req.user._id.equals(updatedCampground.author.id))
-                {
-                    req.flash("error","You don't have the permission to do that");
-                    return res.redirect("/campgrounds/"+req.params.id);
-                }
-                else
-                    res.redirect("/campgrounds/"+req.params.id);
+            let data=await geocoder.geocode(req.body.campground.location);
+                 req.body.campground.lat = data[0].latitude;
+                 req.body.campground.lng = data[0].longitude;
+            let foundCampground=await Campground.findById(req.params.id);
+            if(!req.user._id.equals(foundCampground.author.id))
+            {
+                req.flash("error","You don't have the permission to do that");
+                return res.redirect("/campgrounds/"+req.params.id);
+            }
+            await Campground.findByIdAndUpdate(req.params.id,req.body.campground,{new:true});
+            res.redirect("/campgrounds/"+req.params.id);
         }
         catch(err)
         {
@@ -166,6 +173,34 @@ router.delete("/:id",middleware.checkCampgroundOwnership,async function(req,res)
         let campground=await Campground.findById(req.params.id);
         await Comment.remove({_id: {$in:campground.comments}});
         await Campground.findByIdAndRemove(req.params.id);
+        await User.findById(req.user._id).populate('followers').exec(async function(err,foundUser){
+               try{     
+                    if(err || !foundUser)
+                    {
+                        req.flash("error",err.message);
+                         return res.redirect("/campgrounds");
+                    }
+            
+                    for(const follower of foundUser.followers) 
+                    {
+                        await User.findById(follower._id).populate('notifications').exec(function(err,fan){
+                            if(err || !fan)
+                            {
+                                req.flash("error","Something Went Wrong");
+                                res.redirect("back");
+                            }
+                            fan.notifications=fan.notifications.filter(not=>not.campgroundId!=campground._id);
+                            fan.save();
+                        });
+                        follower.save();
+                    }
+               }
+               catch(err)
+               {
+                   req.flash("error","Something Went Wrong");
+                   res.redirect("back");
+               }
+          });
         await Notification.findOneAndDelete({campgroundId:req.params.id}); 
         res.redirect("/campgrounds");
     }
