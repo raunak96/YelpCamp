@@ -60,7 +60,7 @@ middlewareObj.checkCommentOwnership=function(req,res,next){
                         else
                         {
                             req.flash("error","You dont have permission to do that");
-                            res.redirect("back");
+                            res.redirect("/campgrounds/"+req.params.id);
                         }
                     }
                 });
@@ -89,8 +89,8 @@ middlewareObj.UserOwnership=function(req,res,next){
                     next(); //FOLLOW PROCEDURE OF ROUTE WHERE MIDDLWARE USED 
                 else
                 {
-                            req.flash("error","You dont have permission to do that");
-                            res.redirect("/users/"+req.params.id);
+                    req.flash("error","You dont have permission to do that");
+                    res.redirect("/users/"+req.params.id);
                 }   
             }
         });

@@ -1,11 +1,11 @@
 var mongoose=require("mongoose");
 //SCHEMA SETUP
 var campgroundSchema=new mongoose.Schema({
-   name:String,
-   price:String,
+   name:{type:String ,required:true},
+   price:{type:String ,required:true},
    image:String,
    desc:String,
-   location:String,
+   location:{type:String ,required:true},
    lat: Number,
    lng: Number,
    createdAt: { type: Date, default: Date.now }, //ADDED TIME ADDED PROPERTY 

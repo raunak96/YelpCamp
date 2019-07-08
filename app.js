@@ -9,9 +9,12 @@ var express=require("express"),
     Comment=require("./models/comment.js"),
     User=require("./models/user.js"),
     seedDB=require("./seeds.js"),
+    
+    //PASSPORT JS
     passport=require("passport"),
     localStrategy=require("passport-local"),
     expressSession=require("express-session"),
+    
     methodOverride=require("method-override"),
     flash=require("connect-flash");//INSTALLED TO USE FLASH MESSAGES
 

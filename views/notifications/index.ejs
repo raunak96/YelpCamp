@@ -1,15 +1,23 @@
 <% include ../partials/header.ejs %> 
-
-<h1>Notifications</h1>
-
-<ul>
+<div class=container>
+	<div class="row">
+		<div class="col-xs-1"></div> 
+        <div class="col-xs-10">
+        <h1><span class="glyphicon" aria-hidden="true">Notifications</h1></span>
+        <hr style="color:black;border:0.1px solid"/>
+        <div class="list-group">
 	<% allNotifications.forEach(function(notification) { %>
-	<li>
-		<a href="/campgrounds/<%= notification.campgroundId %>">
-			<%= notification.username %> created a new campground %>
+		<a class="list-group-item <%=!notification.isRead?'list-group-item-info':'' %>" style="text-decoration:none;" href="/notifications/<%= notification._id %>">
+		<h4 style="margin:0;"><%= notification.username %> created a new campground</h4>
+		<span class="caption-full"><em><%= moment(notification.createdAt).fromNow() %></em></span>
 		</a>
-	</li>
 	<% }); %>
-</ul>
+	</div>
+        </div>
+	</div>
+	
+</div>
+
+
 
 <% include ../partials/footer.ejs %> 

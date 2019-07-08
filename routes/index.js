@@ -23,24 +23,25 @@ router.get("/register",function(req, res) {
     res.render("register.ejs",{page:"register"});
 })
 //SIGNUP LOGIC
-router.post("/register",function(req, res) {
+router.post("/register",async function(req, res) {
     var newUser=new User({username:req.body.username,avatar:req.body.avatar,firstName:req.body.firstName,
                           lastName:req.body.lastName,email:req.body.email,about:req.body.about});
                           
     if(req.body.adminCode === process.env.SECRET_KEY) {   //IF USER'S ADMIN CODE IS SECRET KEY,MAKE HIM ADMIN,SECRET KEY DEFINED AS
       newUser.isAdmin = true;                               //ENV VAR IN .ENV FILE USING DOTENV PACKAGE
     }
-    User.register(newUser,req.body.password,function(err,user){
-        if(err)
-        {
-            req.flash("error",err.message);//err PROVIDED BY PASSPORT AUTOMATICALLY STORES REGISTER ERROR 
-            return res.redirect("/register");
-        }
-        passport.authenticate("local")(req,res,function(){
+    try{
+      let user=await User.register(newUser,req.body.password);
+      passport.authenticate("local")(req,res,function(){
             req.flash("success","Welcome To Yelpcamp "+user.username);
             res.redirect("/campgrounds");
         });
-    });
+    }
+    catch(err)
+    {
+            req.flash("error",err.message);//err PROVIDED BY PASSPORT AUTOMATICALLY STORES REGISTER ERROR 
+            return res.redirect("/register");
+    }
 })
 //LOGIN ROUTES
 //SHOW LOGIN FORM
@@ -54,9 +55,8 @@ router.post("/login", passport.authenticate("local",
         successRedirect: "/campgrounds",
         failureRedirect: "/login",
         failureFlash: true,     //Setting the failureFlash option to true instructs Passport to flash an error message
-        successFlash: 'Welcome to YelpCamp!'
-    }), function(req, res){
-});
+        successFlash: 'Welcome back to YelpCamp!'
+    }), function(req, res){});
 
 //LOGOUT ROUTE
 router.get("/logout",function(req, res) {
@@ -69,6 +69,8 @@ router.get("/logout",function(req, res) {
 router.get('/forgot', function(req, res) {
   res.render('forgot.ejs');
 });
+/*Async Waterfall Runs an array of functions in series, each passing their results to the next in the array,if any of the functions pass an error 
+to the callback, the next function is not executed and the main callback is immediately called with the error." */
 
 router.post('/forgot', function(req, res, next) {
   async.waterfall([
@@ -192,22 +194,79 @@ router.post('/reset/:token', function(req, res) {
 
 //USER PROFILE
 router.get("/users/:id",function(req, res) {
-   User.findById(req.params.id).populate("followers").exec(function(err,foundUser){
-       if(err || !foundUser)
-       {
+   User.findById(req.params.id).populate("followers").exec(async function(err,foundUser){
+     try{
+     if(err)
+        throw(err);
+         let campgrounds=await Campground.find({'author.id':req.params.id});
+         res.render("users/show.ejs",{user:foundUser,campgrounds:campgrounds});
+       }
+       catch(err){
            req.flash("error","Something went Wrong !");
            return res.redirect("back");
        }
-       Campground.find({'author.id':req.params.id},function(err,campgrounds){
-            if(err)
-            {
-                req.flash("error","Something went Wrong !");
-                return res.redirect("back");
-            }
-            res.render("users/show.ejs",{user:foundUser,campgrounds:campgrounds});
-       });
    });
 });
+
+//EDIT USER PROFILE
+router.get("/users/:id/edit",middleware.UserOwnership,async function(req, res) {
+  try{
+    let foundUser=await User.findById(req.params.id);
+    res.render("users/edit.ejs",{user:foundUser});
+  }
+  catch(err)
+  {
+      req.flash("error","Something Went Wrong !");
+      return res.redirect("/users/"+req.params.id);
+  }
+});
+//UPDATE PROFILE
+router.put("/users/:id",middleware.UserOwnership,async function(req,res){
+    try
+    {
+      let user=await User.findOneAndUpdate({_id:req.params.id},req.body,{new:true});
+      req.flash("success","User updated Successfully!");
+      res.redirect("/users/"+req.params.id);
+    }
+    catch(err)
+    {
+           req.flash("error","User Couldn't be Updated!!!");
+           return res.redirect("back");
+    }
+});
+
+//EDIT AVATAR
+router.get("/users/:id/avtr/edit",middleware.UserOwnership,async function(req, res) {
+  try{
+    let foundUser=await User.findById(req.params.id);
+    res.render("users/edit_avtr.ejs",{user:foundUser});
+  }
+  catch(err)
+  {
+      req.flash("error","Something Went Wrong !");
+      return res.redirect("/users/"+req.params.id);
+  }
+});
+//UPDATE AVATAR
+router.put("/users/:id/avtr",middleware.UserOwnership,function(req,res){
+    User.findById(req.params.id,function(err, foundUser) {
+        if(err || !foundUser)
+        {
+           req.flash("error","User not found !");
+           return res.redirect("back");
+        }
+        User.update(foundUser,{ $set: { avatar:req.body.avatar }},function(err,updateduser){
+            if(err)
+            {
+                req.flash("error","User Couldn't be Updated!!!");
+                return res.redirect("back");
+            }
+            res.redirect("/users/"+req.params.id);
+        });
+    });
+});
+
+
 // follow user
 router.get('/follow/:id', middleware.isLoggedIn, async function(req, res) {
   try {
@@ -249,74 +308,6 @@ router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res)
 });
 
 
-//EDIT USER PROFILE
-router.get("/users/:id/edit",middleware.UserOwnership,function(req, res) {
-  User.findById(req.params.id,function(err, foundUser) {
-      if(err || !foundUser)
-       {
-           req.flash("error","User Not Found !");
-           return res.redirect("back");
-       }
-       res.render("users/edit.ejs",{user:foundUser});
-  });
-});
-//UPDATE PROFILE
-router.put("/users/:id",middleware.UserOwnership,function(req,res){
-    User.findById(req.params.id,function(err, foundUser) {
-        if(err || !foundUser)
-        {
-           req.flash("error","User not found !");
-           return res.redirect("back");
-        }
-        User.update(foundUser,{ $set: 
-        { 
-          firstName:req.body.firstName,
-          lastName:req.body.lastName,
-          email:req.body.email,
-          about:req.body.about
-        }
-          
-        },function(err,updateduser){
-            if(err)
-            {
-                req.flash("error","User Couldn't be Updated!!!");
-                return res.redirect("back");
-            }
-            
-            req.flash("success","User updated Successfully!");
-            res.redirect("/users/"+req.params.id);
-        });
-    });
-});
 
-//EDIT AVATAR
-router.get("/users/:id/avtr/edit",middleware.UserOwnership,function(req, res) {
-   User.findById(req.params.id,function(err,foundUser){
-       if(err || !foundUser)
-       {
-           req.flash("error","User Not Found !");
-           return res.redirect("back");
-       }
-       res.render("users/edit_avtr.ejs",{user:foundUser});
-   });
-});
-//UPDATE AVATAR
-router.put("/users/:id/avtr",middleware.UserOwnership,function(req,res){
-    User.findById(req.params.id,function(err, foundUser) {
-        if(err || !foundUser)
-        {
-           req.flash("error","User not found !");
-           return res.redirect("back");
-        }
-        User.update(foundUser,{ $set: { avatar:req.body.avatar }},function(err,updateduser){
-            if(err)
-            {
-                req.flash("error","User Couldn't be Updated!!!");
-                return res.redirect("back");
-            }
-            res.redirect("/users/"+req.params.id);
-        });
-    });
-});
 
 module.exports=router;

@@ -14,8 +14,15 @@
     		     else{ %>
     			<!--mailto WORKS IF WE DIRECTLY WANT TO MAIL-->
     			<p><div class="caption">You can contact me at:  <a href="mailto:<%= user.email %>"><%= user.email %></a>
-    			    <a href="/follow/<%= user._id %>"><button class="btn btn-success pull-right">Follow <%= user.username %></button></a></div>
-    			</p>
+    			<% if((currentUser && !user.followers.some(foll => foll.equals(currentUser))))
+    			{ %>
+    			    <a href="/follow/<%= user._id %>"><button class="btn btn-success pull-right">Follow <%= user.username %></button></a>
+    			<% }
+    			 else if((currentUser && user.followers.some(foll => foll.equals(currentUser))))
+    			{ %>
+    			    <a><button class="btn btn-primary pull-right">Followed <%= user.username %></button></a>
+    			<% } %>
+    			</div></p>
     		  <%  } %>
     		  </div>
     		<div class="well">

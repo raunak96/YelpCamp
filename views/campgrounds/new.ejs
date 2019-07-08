@@ -7,10 +7,10 @@
         <div class="col-md-6 col-xs-10"> 
             <form action="/campgrounds" method="post">          <!-- POST DATA TO /CAMPGROUNDS ROUTE -->
                 <div class="form-group"> 
-                    <input class="form-control" type="text" name="name" placeholder="name">
+                    <input class="form-control" type="text" name="name" required placeholder="name">
                 </div>
                 <div class="form-group"> 
-                    <input class="form-control" type="number" name="price" placeholder="price" min="500" step="500">
+                    <input class="form-control" type="number" required name="price" placeholder="price" min="500" step="500">
                 </div>
                 <div class="form-group">
                     <input class="form-control" type="text" name="image" placeholder="image url">
@@ -20,7 +20,7 @@
                 </div>
                 <!--THIS IS A PLACES AUTOCOMPLETE API CDN FROM https://www.algolia.com-->
                 <div class ="form-group">
-                    <input class="form-control" type="search" id="address-input" name="location" id="location" placeholder="Yosemite National Park, CA">
+                    <input class="form-control" type="search" id="address-input" name="location" required id="location" placeholder="Yosemite National Park, CA">
                     <script>
                       var placesAutocomplete = places({
                         appId: '<%=process.env.APP_ID%>',

@@ -36,11 +36,9 @@
                     <% } else 
                         { %>
                             <li class="dropdown">
-                              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Notifications <span class="badge"><%= notifications.length %></span></a>
+                              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                  Notifications <span class="badge"><%= notifications.length %></span></a>
                               <ul class="dropdown-menu">
-                                <li>
-                                    <a href="/notifications">View past notifications</a>
-                                </li>
                                 <% notifications.forEach(function(notification) { %>                          
                                     <li>
                                         <a href="/notifications/<%= notification.id %>">
@@ -48,14 +46,19 @@
                                         </a>
                                     </li>
                                 <% }); %>
+                                <li>
+                                    <a href="/notifications">View All Notifications</a>
+                                </li>
                               </ul>
                             </li>
                             
                             <li><a class="active" href="/users/<%=currentUser._id%>">Signed In As <%= currentUser.username %></a></li>
                             <li class="dropdown">
                                 <!-- onerror GIVES ALT IMG IN CASE IMG NOT LOADED -->
-                              <a style="padding:0" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img class="img-circle img-responsive"style="height:50px;width:auto;" src="<%=currentUser.avatar %>"
-                              onerror="src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPlkwhBse_JCK37_0WA3m_PHUpFncOVLM0s0c4cCqpV27UteuJ'"></a>
+                              <a style="padding:0" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                  <img class="img-circle img-responsive"style="height:50px;width:auto;" src="<%=currentUser.avatar %>"
+                                    onerror="src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPlkwhBse_JCK37_0WA3m_PHUpFncOVLM0s0c4cCqpV27UteuJ'">
+                              </a>
                               
                               <ul class="dropdown-menu" style="background:#e0e0d1">
                                 <li><a href="/users/<%=currentUser._id%>">View Your Profile</a></li>
