@@ -22,36 +22,32 @@ var geocoder = NodeGeocoder(options);
 
 //INDEX ROUTE----SHOWS ALL CAMPGROUNDS(IT IS A ROUTE WHICH SHOWS IN BRIEF ALL DATA)
 router.get("/",async function(req,res){
-    if(req.query.search) //IF SEARCH INVOKED THIS ROUTE
+    try
     {
-        //escaperegex function defined below
-        const regex = new RegExp(escapeRegex(req.query.search), 'gi');//GI MAKES GLOBAL CASE-INSENSITIVE SEARCH POSSIBLE
-       
-        // GET ALL CAMPGROUNDS FROM DB WHOSE NAME,LOCATION OR AUTHOR NAME FUZZY MATCHES THE QUERY FROM SEARCH
-        try{
+        if(req.query.search) //IF SEARCH INVOKED THIS ROUTE
+        {
+            //escaperegex function defined below
+            const regex = new RegExp(escapeRegex(req.query.search), 'gi');//GI MAKES GLOBAL CASE-INSENSITIVE SEARCH POSSIBLE
+           
+            // GET ALL CAMPGROUNDS FROM DB WHOSE NAME,LOCATION OR AUTHOR NAME FUZZY MATCHES THE QUERY FROM SEARCH
             let allCampgrounds= await Campground.find({name:regex}); /*{$or: [{name: regex,}, {location: regex}, {"author.username":regex}]},*/
             if(!allCampgrounds.length) 
             {
-              return res.render("campgrounds/index.ejs",{campgrounds:allCampgrounds,fail:"No related Campground found!"});
+                return res.render("campgrounds/index.ejs",{campgrounds:allCampgrounds,fail:"No related Campground found!"});
             }
             else 
-              res.render("campgrounds/index.ejs",{campgrounds:allCampgrounds});
+                res.render("campgrounds/index.ejs",{campgrounds:allCampgrounds});
         }
-        catch(err)
+        else
         {
-            req.flash("error","Something Went Wrong");
-               res.redirect("/campgrounds");
+            let Allcampgrounds=await Campground.find({});
+            res.render("campgrounds/index.ejs",{campgrounds:Allcampgrounds,page:"campgrounds"});
         }
     }
-    else
+    catch(err)
     {
-        try{
-                let Allcampgrounds=await Campground.find({});
-                res.render("campgrounds/index.ejs",{campgrounds:Allcampgrounds,page:"campgrounds"});
-           }
-           catch(err){
-                res.redirect("back");
-           }
+        req.flash("error","Something Went Wrong");
+        res.redirect("/campgrounds");
     }
 });
 
@@ -72,38 +68,26 @@ router.post("/",middleware.isLoggedIn,async function(req,res){   //CONVENTION IS
         username: req.user.username
     };
     //GEOCODE STUFF(FIND LAT AND LNG FROM LOCATION(FORWARD GEOCODING))
-   try{
-   let data=await geocoder.geocode(req.body.location);
-      var lat =     data[0].latitude;
-      var lng  =     data[0].longitude;
-      var location=  req.body.location;
-      var newCampground = {name: name, price:price,image: image, desc: desc,location:location,lat:lat,lng:lng, author:author};
-    
+   try
+   {
+        let data=await geocoder.geocode(req.body.location);
+        var lat =     data[0].latitude;
+        var lng  =     data[0].longitude;
+        var location=  req.body.location;
+        var newCampground = {name: name, price:price,image: image, desc: desc,location:location,lat:lat,lng:lng, author:author};
+        
     //CREATE A NEW CAMPGROUND AND SAVE TO DB
         let newlyCreated=await Campground.create(newCampground);
-        await User.findById(req.user._id).populate('followers').exec(async function(err,foundUser){
-                if(err || !foundUser)
-                {
-                    req.flash("error",err.message);
-                     return res.redirect("/campgrounds");
-                }
-                try{
-                    
-                    var newNotification = {username: req.user.username,campgroundId: newlyCreated._id};
-                    for(const follower of foundUser.followers) 
-                    {
-                            let newlyNot=await Notification.create(newNotification);
-                            follower.notifications.push(newlyNot);
-                            follower.save();
-                        
-                    }
-                }
-                catch(err){
-                            req.flash("error",err.message);
-                            return res.redirect("/campgrounds");
-                    }
-            });
-            res.redirect("/campgrounds/"+newlyCreated._id);
+        let foundUser=await User.findById(req.user._id).populate('followers').exec();
+        var newNotification = {username: req.user.username,campgroundId: newlyCreated._id};
+        for(const follower of foundUser.followers) 
+        {
+            let newlyNot=await Notification.create(newNotification);
+            follower.notifications.push(newlyNot);
+            follower.save();
+        }
+        req.flash("success","Campground successfully created!");
+        return res.redirect("/campgrounds/"+newlyCreated._id);
     }
     catch(err)
     {
@@ -169,51 +153,33 @@ router.put("/:id",middleware.checkCampgroundOwnership,async function(req,res){
 });  
 //DESTROY ROUTE
 router.delete("/:id",middleware.checkCampgroundOwnership,async function(req,res){
-    try{
+    try
+    {
         let campground=await Campground.findById(req.params.id);
         await Comment.remove({_id: {$in:campground.comments}});
         await Campground.findByIdAndRemove(req.params.id);
-        await User.findById(req.user._id).populate('followers').exec(async function(err,foundUser){
-               try{     
-                    if(err || !foundUser)
-                    {
-                        req.flash("error",err.message);
-                         return res.redirect("/campgrounds");
-                    }
-            
-                    for(const follower of foundUser.followers) 
-                    {
-                        await User.findById(follower._id).populate('notifications').exec(function(err,fan){
-                            if(err || !fan)
-                            {
-                                req.flash("error","Something Went Wrong");
-                                res.redirect("back");
-                            }
-                            fan.notifications=fan.notifications.filter(not=>not.campgroundId!=campground._id);
-                            fan.save();
-                        });
-                        follower.save();
-                    }
-               }
-               catch(err)
-               {
-                   req.flash("error","Something Went Wrong");
-                   res.redirect("back");
-               }
-          });
+        let foundUser=await User.findById(req.user._id).populate('followers').exec();
+        for(const follower of foundUser.followers) 
+        {
+            let fan=await User.findById(follower._id).populate('notifications').exec();  
+            fan.notifications=fan.notifications.filter(not=>not.campgroundId!=campground._id);
+            fan.save();
+            follower.save();
+        }
         await Notification.findOneAndDelete({campgroundId:req.params.id}); 
         req.flash("success","Campground deleted successfully");
         return res.redirect("/campgrounds");
     }
     catch(err)
     {
-        req.flash("error","Campground could not be deleted");
+        req.flash("error","Something Went Wrong");
         res.redirect("back");
     }
+    
 });
 
 function escapeRegex(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-};
+}
 
 module.exports=router;
