@@ -52,11 +52,12 @@ router.get("/login",function(req, res) {
 //2ND ARG IS MIDDLEWARE(WILL CAUSE AUTHENTICATION i.e. CHECK IF USERNAME PASSWORD MATCHES IN DB)
 router.post("/login", passport.authenticate("local", 
     {
-        successRedirect: "/campgrounds",
         failureRedirect: "/login",
         failureFlash: true,     //Setting the failureFlash option to true instructs Passport to flash an error message
-        successFlash: 'Welcome back to YelpCamp!'
-    }), function(req, res){});
+    }), function(req, res){
+      req.flash("success",`Welcome back ${req.body.username}`);
+      res.redirect("/campgrounds");
+    });
 
 //LOGOUT ROUTE
 router.get("/logout",function(req, res) {
