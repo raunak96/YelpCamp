@@ -267,7 +267,31 @@ router.put("/users/:id/avtr",middleware.UserOwnership,function(req,res){
     });
 });
 
-
+//change password
+router.get('/users/:id/changePassword',middleware.UserOwnership,async function(req,res){
+  res.render('users/change.ejs');
+});
+router.post('/users/:id/changePassword',middleware.UserOwnership,async function(req,res){
+  try{
+    let user=await User.findById(req.params.id);
+    if(req.body.newPassword===req.body.confirm)
+    {
+        await user.changePassword(req.body.oldPassword,req.body.newPassword);
+        req.flash("success","Password Change Successfully");
+        res.redirect("/users/"+req.params.id);
+    }
+    else      //IF PASSWORD!=CONFIRM PASSWORD FIELD
+    {
+            req.flash("error", "Passwords do not match.");
+            return res.redirect('back');
+    }
+  }
+  catch(err)
+  {
+      req.flash("error",err.message);
+      res.redirect("/users/"+req.params.id+"/changePassword");
+  }
+});
 // follow user
 router.get('/follow/:id', middleware.isLoggedIn, async function(req, res) {
   try {
@@ -307,7 +331,6 @@ router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res)
     res.redirect('back');
   }
 });
-
 
 
 

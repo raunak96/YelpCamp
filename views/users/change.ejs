@@ -1,0 +1,25 @@
+<% include ../partials/header.ejs %>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 col-xs-1"></div>
+        <div class="col-md-6 col-xs-10"> 
+    <h1 style="text-align:center">Change Your Password</h1>
+    <form action="/users/<%=currentUser._id %>/changePassword" method="post">
+        <div class="form-group">
+	        <input type="password" class="form-control" name="oldPassword" placeholder="Old Password" required>
+	    </div>
+	    <div class="form-group">
+	        <input type="password" class="form-control" name="newPassword" pattern=".{6,12}" title="password must be between 6 to 12 characters" placeholder="New Password">
+        </div>
+        <div class="form-group">
+	        <input type="password" class="form-control" name="confirm" pattern=".{6,12}" title="password must be between 6 to 12 characters" placeholder="Confirm New Password">
+        </div>
+        <div class="form-group">
+            <button class="btn btn-lg btn-primary btn-block">Submit!</button> <!-- btn-block :button takes entire size of block -->
+        </div>
+    </form>
+    </div></div>
+    </div>
+
+<% include ../partials/footer.ejs %>
