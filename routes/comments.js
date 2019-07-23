@@ -76,6 +76,9 @@ router.put("/:comment_id",middleware.checkCommentOwnership,async function(req,re
 router.delete("/:comment_id",middleware.checkCommentOwnership,async function(req, res) {
     try
     {
+        let campground=await Campground.findById(req.params.id);
+        campground.comments=campground.comments.filter(comm=>comm._id!=req.params.comment_id);
+        campground.save();
         await Comment.findByIdAndRemove(req.params.comment_id);
         req.flash("success","Comment Deleted!");          
         return res.redirect("/campgrounds/"+req.params.id); 
