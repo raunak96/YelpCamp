@@ -5,7 +5,7 @@ var express=require("express");
 var router=express.Router({mergeParams:true}); //ALLOWS PARAMS FROM OTHER FIELS TO BE USED IN COMMENTS("coz /:id is sent from app.js")
 var Campground=require("../models/campground.js");
 var Comment=require("../models/comment.js");
-
+var User=require("../models/user.js");
 var middleware=require("../middleware");//WE DIDNT DO middleware/index.js AS index.js IS A SPECIAL FILENAME ALWAYS INCLUDED WHEM DIRECTORY
                                         //INCLUDED
 //NEW ROUTE
@@ -13,11 +13,16 @@ router.get("/new",middleware.isLoggedIn,async function(req, res) {
     try
     {
         let foundCampground=await Campground.findById(req.params.id);
+        let owner=await User.findById(foundCampground.author.id).populate('followers').exec();
+        if((!owner.followers.length || owner.followers.find(f=>f._id.equals(req.user._id))===undefined) && !req.user._id.equals(owner._id)) 
+        {
+            throw({message:`You are not a follower of ${owner.username}!`});
+        }
         res.render("comments/new.ejs",{campground:foundCampground});         
     }
     catch(err)
     {
-        req.flash("error","Campground not found");
+        req.flash("error",err.message);
         res.redirect("/campgrounds");
     }
 });
