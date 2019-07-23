@@ -166,7 +166,7 @@ router.delete("/:id",middleware.checkCampgroundOwnership,async function(req,res)
             fan.save();
             follower.save();
         }
-        await Notification.findOneAndDelete({campgroundId:req.params.id}); 
+        await Notification.remove({campgroundId:req.params.id}); 
         req.flash("success","Campground deleted successfully");
         return res.redirect("/campgrounds");
     }
